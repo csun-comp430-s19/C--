@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TheTokenizer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">comp430Compiler</a> &gt; <a href="index.source.html" class="el_package">Tokenizer</a> &gt; <span class="el_source">TheTokenizer.java</span></div><h1>TheTokenizer.java</h1><pre class="source lang-java linenums">/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package Tokenizer;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+/**
+ *
+ * @author Quelyn
+ */
+public class TheTokenizer {
+
+    // begin static variables
+<span class="fc" id="L18">    private static Map&lt;String, Token&gt; TOKEN_MAPPING =</span>
+<span class="fc" id="L19">        new HashMap&lt;String, Token&gt;() {{</span>
+<span class="fc" id="L20">            put(&quot;+&quot;, new PlusToken());</span>
+<span class="fc" id="L21">            put(&quot;-&quot;, new MinusToken());</span>
+<span class="fc" id="L22">            put(&quot;*&quot;, new MultToken());</span>
+<span class="fc" id="L23">            put(&quot;/&quot;, new DivToken());</span>
+<span class="fc" id="L24">            put(&quot;(&quot;, new LeftParenToken());</span>
+<span class="fc" id="L25">            put(&quot;)&quot;, new RightParenToken());</span>
+<span class="fc" id="L26">            put(&quot;{&quot;, new LeftCurlyToken());</span>
+<span class="fc" id="L27">            put(&quot;}&quot;, new RightCurlyToken());</span>
+<span class="fc" id="L28">            put(&quot;if&quot;, new IfToken());</span>
+<span class="fc" id="L29">            put(&quot;else&quot;, new ElseToken());</span>
+<span class="fc" id="L30">            put(&quot;#&quot;, new PoundToken());</span>
+<span class="fc" id="L31">            put(&quot;&lt;&quot;, new LessToken());</span>
+<span class="fc" id="L32">            put(&quot;&gt;&quot;, new GreaterToken());</span>
+<span class="fc" id="L33">            put(&quot;[&quot;, new LeftSquareToken());</span>
+<span class="fc" id="L34">            put(&quot;]&quot;, new RightSquareToken());</span>
+<span class="fc" id="L35">            put(&quot;.&quot;, new PeriodToken());</span>
+<span class="fc" id="L36">            put(&quot;\&quot;&quot;, new QuoteToken());</span>
+<span class="fc" id="L37">            put(&quot;\\&quot;, new EscapeToken());</span>
+<span class="fc" id="L38">            put(&quot;;&quot;, new SemiToken());</span>
+<span class="fc" id="L39">            put(&quot;=&quot;, new EqualsToken());</span>
+<span class="fc" id="L40">            put(&quot;,&quot;, new CommaToken());</span>
+<span class="fc" id="L41">            put(&quot;:&quot;, new ColonToken());</span>
+<span class="fc" id="L42">            put(&quot;%&quot;, new PercentToken());</span>
+<span class="fc" id="L43">            put(&quot;!&quot;, new NotToken());</span>
+<span class="fc" id="L44">            put(&quot;'&quot;, new SingleQToken());</span>
+<span class="fc" id="L45">        }};</span>
+    // end static variables
+    
+    // begin instance variables
+    private char[] input;
+    private int inputPos; // position in the input
+    // end instance variables
+
+        
+<span class="fc" id="L54">    TheTokenizer(final char[] input) {</span>
+<span class="fc" id="L55">        this.input = input;</span>
+<span class="fc" id="L56">        inputPos = 0;</span>
+<span class="fc" id="L57">    }</span>
+
+    public static boolean isTokenString(final String input) {
+<span class="fc" id="L60">        return TOKEN_MAPPING.containsKey(input);</span>
+    }
+    
+    // assumes there is at least one character left
+    // returns null if it couldn't parse a number
+    private NumberToken tryTokenizeNumber() {
+<span class="fc" id="L66">        final int initialInputPos = inputPos;</span>
+<span class="fc" id="L67">        String digits = &quot;&quot;;</span>
+
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        while (inputPos &lt; input.length &amp;&amp;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">               Character.isDigit(input[inputPos])) {</span>
+<span class="fc" id="L71">            digits += input[inputPos];</span>
+<span class="fc" id="L72">            inputPos++;</span>
+        }
+
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (digits.length() &gt; 0) {</span>
+<span class="fc" id="L76">            return new NumberToken(Integer.parseInt(digits));</span>
+        } else {
+            // reset position
+<span class="fc" id="L79">            inputPos = initialInputPos;</span>
+<span class="fc" id="L80">            return null;</span>
+        }
+    }
+
+    // assumes there is at least one character left
+    // returns null if it couldn't parse a variable
+    private VariableToken tryTokenizeVariable() {
+<span class="fc" id="L87">        final int initialInputPos = inputPos;</span>
+<span class="fc" id="L88">        String name = &quot;&quot;;</span>
+
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (Character.isLetter(input[inputPos])) {</span>
+<span class="fc" id="L91">            name += input[inputPos];</span>
+<span class="fc" id="L92">            inputPos++;            </span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            while (inputPos &lt; input.length &amp;&amp;</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">                   Character.isLetterOrDigit(input[inputPos])) {</span>
+<span class="fc" id="L95">                name += input[inputPos];</span>
+<span class="fc" id="L96">                inputPos++;</span>
+            }
+        } else {
+            // reset position
+<span class="fc" id="L100">            inputPos = initialInputPos;</span>
+<span class="fc" id="L101">            return null;</span>
+        }
+
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (isTokenString(name)) {</span>
+            // reset position
+<span class="fc" id="L106">            inputPos = initialInputPos;</span>
+<span class="fc" id="L107">            return null;</span>
+        } else {
+<span class="fc" id="L109">            return new VariableToken(name);</span>
+        }
+    }
+
+    private boolean prefixCharsEqual(final String probe) {
+<span class="fc" id="L114">        int targetPos = inputPos;</span>
+<span class="fc" id="L115">        int probePos = 0;</span>
+
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        while (targetPos &lt; input.length &amp;&amp;</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">               probePos &lt; probe.length() &amp;&amp;</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">               probe.charAt(probePos) == input[targetPos]) {</span>
+<span class="fc" id="L120">            probePos++;</span>
+<span class="fc" id="L121">            targetPos++;</span>
+        }
+
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        return probePos == probe.length();</span>
+    }
+            
+    // returns null if it couldn't parse a token
+    private Token tryTokenizeOther() {
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for (final Map.Entry&lt;String, Token&gt; entry : TOKEN_MAPPING.entrySet()) {</span>
+<span class="fc" id="L130">            final String key = entry.getKey();</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">            if (prefixCharsEqual(key)) {</span>
+<span class="fc" id="L132">                inputPos += key.length();</span>
+<span class="fc" id="L133">                return entry.getValue();</span>
+            }
+<span class="fc" id="L135">        }</span>
+<span class="fc" id="L136">        return null;</span>
+    }
+    
+    private void skipWhitespace() {
+<span class="fc bfc" id="L140" title="All 2 branches covered.">        while (inputPos &lt; input.length &amp;&amp;</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">               Character.isWhitespace(input[inputPos])) {</span>
+<span class="fc" id="L142">            inputPos++;</span>
+        }
+<span class="fc" id="L144">    }</span>
+
+    // returns null if there are no more tokens
+    public Token tokenizeSingle() throws TokenizerException {
+<span class="fc" id="L148">        VariableToken var = null;</span>
+<span class="fc" id="L149">        NumberToken num = null;</span>
+<span class="fc" id="L150">        Token otherToken = null;</span>
+
+<span class="fc" id="L152">        skipWhitespace();</span>
+
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (inputPos &gt;= input.length) {</span>
+<span class="fc" id="L155">            return null;</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        } else if ((var = tryTokenizeVariable()) != null) {</span>
+<span class="fc" id="L157">            return var;</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        } else if ((num = tryTokenizeNumber()) != null) {</span>
+<span class="fc" id="L159">            return num;</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        } else if ((otherToken = tryTokenizeOther()) != null) {</span>
+<span class="fc" id="L161">            return otherToken;</span>
+        } else {
+<span class="fc" id="L163">            throw new TokenizerException(&quot;Invalid character &quot; +</span>
+                                         input[inputPos] +
+                                         &quot; at position &quot; +
+                                         inputPos);
+        }
+    }
+    
+    public List&lt;Token&gt; tokenize() throws TokenizerException {
+<span class="fc" id="L171">        List&lt;Token&gt; list = new ArrayList&lt;Token&gt;();</span>
+<span class="fc" id="L172">        Token current = null;</span>
+            
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        while ((current = tokenizeSingle()) != null) {</span>
+<span class="fc" id="L175">            list.add(current);</span>
+        }
+
+<span class="fc" id="L178">        return list;</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
