@@ -1,4 +1,6 @@
 # C--
+***NOTE: look at AntlrCParser repo for our parser code***
+
 "C--" compiled to ARM assembly using Java
 
 Group Members
